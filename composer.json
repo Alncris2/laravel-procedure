@@ -1,0 +1,33 @@
+{
+    "name": "alncri2/laravel-procedure",
+    "description": "Procedure versioning and execution support for Laravel projects.",
+    "keywords": ["laravel", "procedure", "stored-procedure", "oracle", "mysql", "versioning"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "alncri2"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.3",
+        "illuminate/support": "^5.8|^6.0|^7.0|^8.0",
+        "illuminate/console": "^5.8|^6.0|^7.0|^8.0",
+        "illuminate/database": "^5.8|^6.0|^7.0|^8.0",
+        "illuminate/filesystem": "^5.8|^6.0|^7.0|^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Alncri2\\LaravelProcedure\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Alncri2\\LaravelProcedure\\ProcedureServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

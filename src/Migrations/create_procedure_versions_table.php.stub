@@ -1,0 +1,45 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateProcedureVersionsTable extends Migration
+{
+    public function up()
+    {
+        $table = config('procedure.history_table', 'procedure_versions');
+
+        Schema::create($table, function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('group_name');
+            $table->string('procedure_name');
+            $table->unsignedInteger('version_number');
+            $table->string('version_label')->nullable();
+            $table->string('file_name');
+            $table->string('file_path');
+            $table->string('checksum', 64);
+            $table->string('execution_status', 20);
+            $table->unsignedInteger('execution_time_ms')->nullable();
+            $table->text('error_message')->nullable();
+            $table->timestamp('applied_at')->nullable();
+            $table->timestamp('rolled_back_at')->nullable();
+            $table->boolean('is_current')->default(false);
+            $table->timestamps();
+
+            $table->index(array('group_name', 'procedure_name'));
+            $table->index(array('procedure_name', 'version_number'));
+            $table->index('is_current');
+            $table->unique(
+                array('group_name', 'procedure_name', 'version_number'),
+                'proc_ver_unique'
+            );
+        });
+    }
+
+    public function down()
+    {
+        $table = config('procedure.history_table', 'procedure_versions');
+        Schema::dropIfExists($table);
+    }
+}
