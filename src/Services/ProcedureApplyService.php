@@ -1,11 +1,11 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Services;
+namespace Alncris2\LaravelProcedure\Services;
 
-use Alncri2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
-use Alncri2\LaravelProcedure\Models\ProcedureDefinition;
-use Alncri2\LaravelProcedure\Repositories\ProcedureVersionRepository;
-use Alncri2\LaravelProcedure\Support\Checksum;
+use Alncris2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
+use Alncris2\LaravelProcedure\Models\ProcedureDefinition;
+use Alncris2\LaravelProcedure\Repositories\ProcedureVersionRepository;
+use Alncris2\LaravelProcedure\Support\Checksum;
 use RuntimeException;
 
 class ProcedureApplyService
@@ -121,7 +121,7 @@ class ProcedureApplyService
             // sem snapshot, usa o próximo número só para registrar
             $next = $this->snapshots->getNextVersionNumber($def);
             $contents = $def->readCurrent();
-            $snapshot = new \Alncri2\LaravelProcedure\Models\ProcedureSnapshot(
+            $snapshot = new \Alncris2\LaravelProcedure\Models\ProcedureSnapshot(
                 $next,
                 null,
                 'current.sql',

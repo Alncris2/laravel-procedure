@@ -10,7 +10,7 @@ Versionamento e aplicação de **stored procedures** para projetos Laravel, com 
 ## Instalação
 
 ```bash
-composer require alncri2/laravel-procedure
+composer require alncris2/laravel-procedure
 ```
 
 Publicar config e migration:

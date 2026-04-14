@@ -1,9 +1,9 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Executors;
+namespace Alncris2\LaravelProcedure\Executors;
 
-use Alncri2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
-use Alncri2\LaravelProcedure\Support\SqlNormalizer;
+use Alncris2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
+use Alncris2\LaravelProcedure\Support\SqlNormalizer;
 use Exception;
 use Illuminate\Support\Facades\DB;
 

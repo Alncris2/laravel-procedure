@@ -1,12 +1,12 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Services;
+namespace Alncris2\LaravelProcedure\Services;
 
-use Alncri2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
-use Alncri2\LaravelProcedure\Contracts\ProcedureSourceReaderInterface;
-use Alncri2\LaravelProcedure\Repositories\ProcedureVersionRepository;
-use Alncri2\LaravelProcedure\Support\Checksum;
-use Alncri2\LaravelProcedure\Support\Slugger;
+use Alncris2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
+use Alncris2\LaravelProcedure\Contracts\ProcedureSourceReaderInterface;
+use Alncris2\LaravelProcedure\Repositories\ProcedureVersionRepository;
+use Alncris2\LaravelProcedure\Support\Checksum;
+use Alncris2\LaravelProcedure\Support\Slugger;
 use RuntimeException;
 
 class ProcedureDumpService
@@ -168,7 +168,7 @@ class ProcedureDumpService
     }
 
     /**
-     * @param \Alncri2\LaravelProcedure\Models\ProcedureDefinition $def
+     * @param \Alncris2\LaravelProcedure\Models\ProcedureDefinition $def
      * @return void
      */
     protected function ensureDirs($def)
@@ -181,7 +181,7 @@ class ProcedureDumpService
     }
 
     /**
-     * @param \Alncri2\LaravelProcedure\Models\ProcedureDefinition $def
+     * @param \Alncris2\LaravelProcedure\Models\ProcedureDefinition $def
      * @param string                                               $contents
      * @return void
      */
@@ -197,8 +197,8 @@ class ProcedureDumpService
      * Registra a importação como uma linha "current" em procedure_versions,
      * assumindo que o conteúdo já está vigente no banco (porque foi lido de lá).
      *
-     * @param \Alncri2\LaravelProcedure\Models\ProcedureDefinition $def
-     * @param \Alncri2\LaravelProcedure\Models\ProcedureSnapshot   $snap
+     * @param \Alncris2\LaravelProcedure\Models\ProcedureDefinition $def
+     * @param \Alncris2\LaravelProcedure\Models\ProcedureSnapshot   $snap
      * @return void
      */
     protected function registerImport($def, $snap)

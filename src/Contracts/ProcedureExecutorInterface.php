@@ -1,6 +1,6 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Contracts;
+namespace Alncris2\LaravelProcedure\Contracts;
 
 interface ProcedureExecutorInterface
 {

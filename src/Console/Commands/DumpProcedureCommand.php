@@ -1,8 +1,8 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Console\Commands;
+namespace Alncris2\LaravelProcedure\Console\Commands;
 
-use Alncri2\LaravelProcedure\Services\ProcedureDumpService;
+use Alncris2\LaravelProcedure\Services\ProcedureDumpService;
 use Illuminate\Console\Command;
 
 class DumpProcedureCommand extends Command

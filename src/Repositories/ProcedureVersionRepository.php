@@ -1,6 +1,6 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Repositories;
+namespace Alncris2\LaravelProcedure\Repositories;
 
 use Illuminate\Support\Facades\DB;
 

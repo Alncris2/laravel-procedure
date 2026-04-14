@@ -1,10 +1,10 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Services;
+namespace Alncris2\LaravelProcedure\Services;
 
-use Alncri2\LaravelProcedure\Models\ProcedureDefinition;
-use Alncri2\LaravelProcedure\Repositories\ProcedureVersionRepository;
-use Alncri2\LaravelProcedure\Support\Checksum;
+use Alncris2\LaravelProcedure\Models\ProcedureDefinition;
+use Alncris2\LaravelProcedure\Repositories\ProcedureVersionRepository;
+use Alncris2\LaravelProcedure\Support\Checksum;
 
 class ProcedureStatusService
 {

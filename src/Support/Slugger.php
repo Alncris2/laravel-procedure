@@ -1,6 +1,6 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Support;
+namespace Alncris2\LaravelProcedure\Support;
 
 class Slugger
 {

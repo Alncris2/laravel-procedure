@@ -1,6 +1,6 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Models;
+namespace Alncris2\LaravelProcedure\Models;
 
 class ProcedureDefinition
 {

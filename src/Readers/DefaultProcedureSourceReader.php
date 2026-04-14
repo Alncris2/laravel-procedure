@@ -1,8 +1,8 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Readers;
+namespace Alncris2\LaravelProcedure\Readers;
 
-use Alncri2\LaravelProcedure\Contracts\ProcedureSourceReaderInterface;
+use Alncris2\LaravelProcedure\Contracts\ProcedureSourceReaderInterface;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 

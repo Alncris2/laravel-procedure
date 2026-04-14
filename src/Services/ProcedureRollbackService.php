@@ -1,10 +1,10 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Services;
+namespace Alncris2\LaravelProcedure\Services;
 
-use Alncri2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
-use Alncri2\LaravelProcedure\Models\ProcedureDefinition;
-use Alncri2\LaravelProcedure\Repositories\ProcedureVersionRepository;
+use Alncris2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
+use Alncris2\LaravelProcedure\Models\ProcedureDefinition;
+use Alncris2\LaravelProcedure\Repositories\ProcedureVersionRepository;
 use RuntimeException;
 
 class ProcedureRollbackService
@@ -144,7 +144,7 @@ class ProcedureRollbackService
     /**
      * @param ProcedureDefinition $def
      * @param int                 $currentVersion
-     * @return \Alncri2\LaravelProcedure\Models\ProcedureSnapshot|null
+     * @return \Alncris2\LaravelProcedure\Models\ProcedureSnapshot|null
      */
     protected function previousSnapshot(ProcedureDefinition $def, $currentVersion)
     {
@@ -162,7 +162,7 @@ class ProcedureRollbackService
     /**
      * @param ProcedureDefinition $def
      * @param int                 $version
-     * @return \Alncri2\LaravelProcedure\Models\ProcedureSnapshot|null
+     * @return \Alncris2\LaravelProcedure\Models\ProcedureSnapshot|null
      */
     protected function snapshotByVersion(ProcedureDefinition $def, $version)
     {

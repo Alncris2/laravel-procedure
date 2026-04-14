@@ -1,8 +1,8 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Console\Commands;
+namespace Alncris2\LaravelProcedure\Console\Commands;
 
-use Alncri2\LaravelProcedure\Services\ProcedureStatusService;
+use Alncris2\LaravelProcedure\Services\ProcedureStatusService;
 use Illuminate\Console\Command;
 
 class StatusProcedureCommand extends Command

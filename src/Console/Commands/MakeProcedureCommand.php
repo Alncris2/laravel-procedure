@@ -1,8 +1,8 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Console\Commands;
+namespace Alncris2\LaravelProcedure\Console\Commands;
 
-use Alncri2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
+use Alncris2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
 use Illuminate\Console\Command;
 
 class MakeProcedureCommand extends Command

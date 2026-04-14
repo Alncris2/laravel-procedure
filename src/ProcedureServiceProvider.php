@@ -1,23 +1,23 @@
 <?php
 
-namespace Alncri2\LaravelProcedure;
+namespace Alncris2\LaravelProcedure;
 
-use Alncri2\LaravelProcedure\Console\Commands\ApplyProcedureCommand;
-use Alncri2\LaravelProcedure\Console\Commands\DumpProcedureCommand;
-use Alncri2\LaravelProcedure\Console\Commands\MakeProcedureCommand;
-use Alncri2\LaravelProcedure\Console\Commands\RollbackProcedureCommand;
-use Alncri2\LaravelProcedure\Console\Commands\StatusProcedureCommand;
-use Alncri2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
-use Alncri2\LaravelProcedure\Contracts\ProcedureSourceReaderInterface;
-use Alncri2\LaravelProcedure\Executors\DefaultProcedureExecutor;
-use Alncri2\LaravelProcedure\Readers\DefaultProcedureSourceReader;
-use Alncri2\LaravelProcedure\Repositories\ProcedureVersionRepository;
-use Alncri2\LaravelProcedure\Services\ProcedureApplyService;
-use Alncri2\LaravelProcedure\Services\ProcedureDumpService;
-use Alncri2\LaravelProcedure\Services\ProcedureRollbackService;
-use Alncri2\LaravelProcedure\Services\ProcedureScanner;
-use Alncri2\LaravelProcedure\Services\ProcedureStatusService;
-use Alncri2\LaravelProcedure\Services\SnapshotService;
+use Alncris2\LaravelProcedure\Console\Commands\ApplyProcedureCommand;
+use Alncris2\LaravelProcedure\Console\Commands\DumpProcedureCommand;
+use Alncris2\LaravelProcedure\Console\Commands\MakeProcedureCommand;
+use Alncris2\LaravelProcedure\Console\Commands\RollbackProcedureCommand;
+use Alncris2\LaravelProcedure\Console\Commands\StatusProcedureCommand;
+use Alncris2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
+use Alncris2\LaravelProcedure\Contracts\ProcedureSourceReaderInterface;
+use Alncris2\LaravelProcedure\Executors\DefaultProcedureExecutor;
+use Alncris2\LaravelProcedure\Readers\DefaultProcedureSourceReader;
+use Alncris2\LaravelProcedure\Repositories\ProcedureVersionRepository;
+use Alncris2\LaravelProcedure\Services\ProcedureApplyService;
+use Alncris2\LaravelProcedure\Services\ProcedureDumpService;
+use Alncris2\LaravelProcedure\Services\ProcedureRollbackService;
+use Alncris2\LaravelProcedure\Services\ProcedureScanner;
+use Alncris2\LaravelProcedure\Services\ProcedureStatusService;
+use Alncris2\LaravelProcedure\Services\SnapshotService;
 use Illuminate\Support\ServiceProvider;
 
 class ProcedureServiceProvider extends ServiceProvider

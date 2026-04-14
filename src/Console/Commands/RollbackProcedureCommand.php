@@ -1,8 +1,8 @@
 <?php
 
-namespace Alncri2\LaravelProcedure\Console\Commands;
+namespace Alncris2\LaravelProcedure\Console\Commands;
 
-use Alncri2\LaravelProcedure\Services\ProcedureRollbackService;
+use Alncris2\LaravelProcedure\Services\ProcedureRollbackService;
 use Illuminate\Console\Command;
 
 class RollbackProcedureCommand extends Command
