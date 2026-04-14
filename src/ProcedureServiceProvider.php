@@ -85,15 +85,28 @@ class ProcedureServiceProvider extends ServiceProvider
     public function boot()
     {
         if ($this->app->runningInConsole()) {
+            $configPath = __DIR__ . '/../config/procedure.php';
+            $migrationPath = __DIR__ . '/Migrations/create_procedure_versions_table.php.stub';
+            $migrationTarget = database_path(
+                'migrations/' . date('Y_m_d_His') . '_create_procedure_versions_table.php'
+            );
+
+            // Tag individual: só o config.
             $this->publishes(array(
-                __DIR__ . '/../config/procedure.php' => config_path('procedure.php'),
+                $configPath => config_path('procedure.php'),
             ), 'procedure-config');
 
-            $timestamp = date('Y_m_d_His');
+            // Tag individual: só a migration.
             $this->publishes(array(
-                __DIR__ . '/Migrations/create_procedure_versions_table.php.stub' =>
-                    database_path('migrations/' . $timestamp . '_create_procedure_versions_table.php'),
+                $migrationPath => $migrationTarget,
             ), 'procedure-migrations');
+
+            // Tag guarda-chuva: publica tudo de uma vez.
+            //     php artisan vendor:publish --tag=procedure
+            $this->publishes(array(
+                $configPath => config_path('procedure.php'),
+                $migrationPath => $migrationTarget,
+            ), 'procedure');
 
             $this->commands(array(
                 MakeProcedureCommand::class,

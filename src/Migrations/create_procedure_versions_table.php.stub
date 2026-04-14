@@ -4,32 +4,97 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+/**
+ * Cria a tabela de histórico de versões de procedures.
+ *
+ * Esta tabela é o "log" de tudo que o package alncris2/laravel-procedure
+ * aplica no banco. Cada linha representa uma tentativa de execução de um
+ * snapshot (arquivo em database/procedures/{grupo}/{NOME}/versions/).
+ *
+ * O nome da tabela é lido de config('procedure.history_table') — se você
+ * mudar essa config depois que a tabela já foi criada, será necessário
+ * renomear a tabela manualmente.
+ */
 class CreateProcedureVersionsTable extends Migration
 {
+    /**
+     * Aplica a migration.
+     */
     public function up()
     {
         $table = config('procedure.history_table', 'procedure_versions');
 
         Schema::create($table, function (Blueprint $table) {
+            // Chave primária
             $table->bigIncrements('id');
+
+            // Localização lógica da procedure no disco.
+            // group_name corresponde ao diretório do grupo
+            //     (ex.: "atendimento", "faturamento")
+            // procedure_name é o nome da procedure dentro do banco
+            //     (ex.: "PRC_BUSCAR_ATENDIMENTOS")
             $table->string('group_name');
             $table->string('procedure_name');
+
+            // Versão sequencial dentro da procedure. É o número prefixado
+            // no arquivo versions/NNN_label.sql. Começa em 1 e incrementa
+            // a cada apply que gera snapshot.
             $table->unsignedInteger('version_number');
+
+            // Label opcional extraído do nome do arquivo de snapshot —
+            // útil para buscas e exibição. Ex.: "corrige_filtro_de_status".
             $table->string('version_label')->nullable();
+
+            // Nome e caminho absoluto do arquivo de snapshot que gerou
+            // esta aplicação. Armazenado para auditoria.
             $table->string('file_name');
             $table->string('file_path');
+
+            // SHA-256 do conteúdo SQL normalizado. Usado pelo
+            // procedure:status para detectar se o current.sql mudou
+            // em relação à última versão aplicada.
             $table->string('checksum', 64);
+
+            // 'success' ou 'failed'. Linhas com status 'failed' não são
+            // consideradas no cálculo do SYNCED e o procedure:status
+            // marca a procedure como FAILED.
             $table->string('execution_status', 20);
+
+            // Tempo de execução da unprepared() medido no PHP. Pode ser
+            // NULL em registros criados por procedure:dump (onde o
+            // package não executa nada, apenas importa do banco).
             $table->unsignedInteger('execution_time_ms')->nullable();
+
+            // Mensagem da exception quando execution_status = 'failed'.
             $table->text('error_message')->nullable();
+
+            // Timestamps funcionais (não se confundem com created_at).
+            // applied_at    — momento em que a execução terminou
+            // rolled_back_at — momento em que esta versão foi sobreposta
+            //                  por um rollback (não significa que o SQL
+            //                  foi revertido, significa que deixou de ser
+            //                  a versão corrente)
             $table->timestamp('applied_at')->nullable();
             $table->timestamp('rolled_back_at')->nullable();
+
+            // Flag que indica qual versão está vigente no banco. Em
+            // condições normais, existe no máximo uma linha com
+            // is_current = true por (group_name, procedure_name).
             $table->boolean('is_current')->default(false);
+
+            // Auditoria padrão Eloquent.
             $table->timestamps();
 
+            // Índices de acesso comum:
+            //     - lookup por grupo e nome (procedure:status)
+            //     - lookup da última versão aplicada (procedure:apply)
+            //     - filtro rápido da versão corrente
             $table->index(array('group_name', 'procedure_name'));
             $table->index(array('procedure_name', 'version_number'));
             $table->index('is_current');
+
+            // Garantia de unicidade: uma mesma procedure dentro de um
+            // grupo nunca tem dois registros com o mesmo version_number.
             $table->unique(
                 array('group_name', 'procedure_name', 'version_number'),
                 'proc_ver_unique'
@@ -37,6 +102,9 @@ class CreateProcedureVersionsTable extends Migration
         });
     }
 
+    /**
+     * Reverte a migration.
+     */
     public function down()
     {
         $table = config('procedure.history_table', 'procedure_versions');

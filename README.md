@@ -13,12 +13,18 @@ Versionamento e aplicação de **stored procedures** para projetos Laravel, com 
 composer require alncris2/laravel-procedure
 ```
 
-Publicar config e migration:
+Publicar config e migration (tudo de uma vez):
+
+```bash
+php artisan vendor:publish --tag=procedure
+php artisan migrate
+```
+
+Ou separadamente, se preferir:
 
 ```bash
 php artisan vendor:publish --tag=procedure-config
 php artisan vendor:publish --tag=procedure-migrations
-php artisan migrate
 ```
 
 ## Uso
