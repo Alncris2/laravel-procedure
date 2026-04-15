@@ -78,16 +78,42 @@ O apply:
 Para trazer procedures já existentes no banco para dentro do projeto:
 
 ```bash
-php artisan procedure:dump --group=imported
+# Sem --group: infere grupos automaticamente em modo dry-run
+php artisan procedure:dump
+
+# Efetiva a proposta do auto-group
+php artisan procedure:dump --apply
+
+# Grupo explícito (comportamento clássico)
+php artisan procedure:dump --group=atendimento
 php artisan procedure:dump --group=atendimento --only=PRC_BUSCAR_ATENDIMENTOS
 php artisan procedure:dump --group=atendimento --owner=MYSCHEMA          # Oracle
 php artisan procedure:dump --group=imported --no-register                # não grava linha em procedure_versions
+
+# Forçar uma estratégia específica de auto-group
+php artisan procedure:dump --apply --strategy=prefix   # cascade|prefix|tables|schema
 ```
 
-Comportamento por procedure:
-- Se a estrutura local **não existe** → cria `current.sql` com o SQL do banco e gera `versions/001_dump_import.sql`.
-- Se existe e o checksum **bate** com o banco → marca como `synced` e não faz nada.
-- Se existe e **diverge** → sobrescreve o `current.sql` com o SQL do banco e cria um novo snapshot `NNN_dump_import.sql` (preservando o histórico anterior em `versions/`).
+#### Auto-group (quando `--group` é omitido)
+
+O grupo de destino de cada procedure é inferido por uma **cascata determinística** (sem APIs externas, sem dependências de ML):
+
+1. **Prefixo do nome** — `SP_INV_*`, `PRC_FIN_*`, `UpdateCustomer` → agrupa pelo token de domínio, pulando prefixos de tipo (`sp_`, `prc_`, etc.).
+2. **Tabelas referenciadas** — parse leve de `FROM`/`JOIN`/`UPDATE`/`INSERT INTO`/`DELETE FROM`/`MERGE INTO`; procedures que compartilham tabelas caem no mesmo grupo, nomeado pela tabela mais frequente.
+3. **Owner/schema** do banco como fallback.
+4. **`ungrouped`** como último recurso.
+
+Sem `--apply`, o comando apenas imprime a proposta (tabela `procedure | grupo proposto | estratégia | tabelas-chave`) sem gravar nada. Com `--apply`, efetiva.
+
+Configurável em `config/procedure.php` no bloco `auto_group` (veja abaixo).
+
+#### Comportamento por procedure
+
+- **Procedure nova no projeto** (primeira importação) → grava `current.sql` e uma **baseline silenciosa** em `procedure_versions` com label `dump_import`. **Nenhum arquivo** é criado em `versions/` — `status` já fica `SYNCED`.
+- **Existe e banco == disco** → resultado `synced`, nenhuma escrita.
+- **Existe e diverge** → sobrescreve `current.sql` e cria snapshot físico `versions/NNN_dump_sync.sql` como uma versão real do histórico.
+
+Dessa forma `versions/` só registra mudanças reais vindas do banco; a primeira importação não polui o diretório. Rollback sobre uma baseline sem snapshot físico retorna mensagem explicativa.
 
 Suporta Oracle (`USER_SOURCE` / `ALL_SOURCE`) e MySQL (`SHOW CREATE PROCEDURE`).
 
@@ -115,6 +141,13 @@ return [
     'sql' => [
         'strip_trailing_oracle_slash' => true,
         'remove_mysql_delimiter' => true,
+    ],
+    'auto_group' => [
+        'min_cluster_size' => 2,
+        'prefix_separator' => '_',
+        'noise_prefixes' => ['sp', 'usp', 'prc', 'proc', 'fn', 'fnc', 'p'],
+        'noise_tables' => ['dual'],
+        'fallback' => 'ungrouped',
     ],
 ];
 ```
