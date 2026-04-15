@@ -126,4 +126,42 @@ return array(
 
     ),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Auto Group (procedure:dump sem --group)
+    |--------------------------------------------------------------------------
+    |
+    | Quando o comando procedure:dump é executado sem --group, o grupo de
+    | destino de cada procedure é inferido por uma cascata de heurísticas
+    | determinísticas:
+    |
+    |   1. Prefixo do nome (SP_INV_* / PRC_FIN_* / UpdateCustomer)
+    |   2. Tabelas referenciadas no corpo (clustering por tabelas compartilhadas)
+    |   3. Owner/schema do banco
+    |   4. Fallback literal
+    |
+    | min_cluster_size   Mínimo de procedures num candidato a grupo para o
+    |                    prefixo/clustering valer. Abaixo disso, cai pro
+    |                    próximo passo da cascata.
+    |
+    | prefix_separator   Separador usado para quebrar o nome em tokens.
+    |
+    | noise_prefixes     Tokens de "tipo" que devem ser pulados ao escolher
+    |                    o prefixo (ex.: SP_INV_UPDATE → usa "INV", não "SP").
+    |
+    | noise_tables       Nomes de tabelas a ignorar no clustering por tabela
+    |                    (além de qualquer "temp_*" / "tmp_*", já ignorados).
+    |
+    | fallback           Grupo usado quando nenhuma heurística se aplica.
+    |
+    */
+
+    'auto_group' => array(
+        'min_cluster_size' => 2,
+        'prefix_separator' => '_',
+        'noise_prefixes' => array('sp', 'usp', 'prc', 'proc', 'fn', 'fnc', 'p'),
+        'noise_tables' => array('dual'),
+        'fallback' => 'ungrouped',
+    ),
+
 );

@@ -12,6 +12,7 @@ use Alncris2\LaravelProcedure\Contracts\ProcedureSourceReaderInterface;
 use Alncris2\LaravelProcedure\Executors\DefaultProcedureExecutor;
 use Alncris2\LaravelProcedure\Readers\DefaultProcedureSourceReader;
 use Alncris2\LaravelProcedure\Repositories\ProcedureVersionRepository;
+use Alncris2\LaravelProcedure\Services\AutoGroupResolver;
 use Alncris2\LaravelProcedure\Services\ProcedureApplyService;
 use Alncris2\LaravelProcedure\Services\ProcedureDumpService;
 use Alncris2\LaravelProcedure\Services\ProcedureRollbackService;
@@ -71,13 +72,19 @@ class ProcedureServiceProvider extends ServiceProvider
             );
         });
 
+        $this->app->singleton(AutoGroupResolver::class, function ($app) {
+            $config = $app['config']->get('procedure.auto_group', array());
+            return new AutoGroupResolver(is_array($config) ? $config : array());
+        });
+
         $this->app->singleton(ProcedureDumpService::class, function ($app) {
             return new ProcedureDumpService(
                 $app->make(ProcedureSourceReaderInterface::class),
                 $app->make(ProcedureScanner::class),
                 $app->make(SnapshotService::class),
                 $app->make(ProcedureExecutorInterface::class),
-                $app->make(ProcedureVersionRepository::class)
+                $app->make(ProcedureVersionRepository::class),
+                $app->make(AutoGroupResolver::class)
             );
         });
     }

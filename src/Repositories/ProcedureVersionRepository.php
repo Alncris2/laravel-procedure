@@ -66,6 +66,23 @@ class ProcedureVersionRepository
     }
 
     /**
+     * Próximo version_number considerando o histórico no banco (inclui
+     * linhas sem arquivo físico em versions/, como as de importação baseline).
+     *
+     * @param string $group
+     * @param string $procedureName
+     * @return int
+     */
+    public function getNextVersionNumber($group, $procedureName)
+    {
+        $max = $this->query()
+            ->where('group_name', $group)
+            ->where('procedure_name', $procedureName)
+            ->max('version_number');
+        return $max ? ((int) $max) + 1 : 1;
+    }
+
+    /**
      * Grava o registro de uma aplicação (success ou failed).
      *
      * @param array $data

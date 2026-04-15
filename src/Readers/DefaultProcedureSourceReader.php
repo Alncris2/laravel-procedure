@@ -46,6 +46,26 @@ class DefaultProcedureSourceReader implements ProcedureSourceReaderInterface
     }
 
     /**
+     * @param array $options
+     * @return array<int, array{name: string, owner: ?string}>
+     */
+    public function listProceduresDetailed(array $options = array())
+    {
+        $driver = $this->driver();
+
+        if ($driver === 'oracle') {
+            return $this->listOracleDetailed($options);
+        }
+        if ($driver === 'mysql') {
+            return $this->listMysqlDetailed($options);
+        }
+
+        throw new RuntimeException(
+            'Dump de procedures não suportado para o driver: ' . $driver
+        );
+    }
+
+    /**
      * @param string $name
      * @param array  $options
      * @return string
@@ -106,6 +126,48 @@ class DefaultProcedureSourceReader implements ProcedureSourceReaderInterface
             $name = isset($row['NAME']) ? $row['NAME'] : (isset($row['name']) ? $row['name'] : null);
             if ($name !== null) {
                 $out[] = $name;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * @param array $options
+     * @return array<int, array{name: string, owner: ?string}>
+     */
+    protected function listOracleDetailed(array $options)
+    {
+        $only = isset($options['only']) ? $options['only'] : null;
+        $owner = isset($options['owner']) ? $options['owner'] : null;
+
+        if ($owner) {
+            $sql = 'SELECT DISTINCT OBJECT_NAME AS NAME, OWNER AS OWNER FROM ALL_OBJECTS '
+                 . "WHERE OBJECT_TYPE = 'PROCEDURE' AND OWNER = ?";
+            $bindings = array(strtoupper($owner));
+            if ($only) {
+                $sql .= ' AND OBJECT_NAME = ?';
+                $bindings[] = strtoupper($only);
+            }
+            $sql .= ' ORDER BY OBJECT_NAME';
+        } else {
+            $sql = 'SELECT DISTINCT OBJECT_NAME AS NAME, USER AS OWNER FROM USER_OBJECTS '
+                 . "WHERE OBJECT_TYPE = 'PROCEDURE'";
+            $bindings = array();
+            if ($only) {
+                $sql .= ' AND OBJECT_NAME = ?';
+                $bindings[] = strtoupper($only);
+            }
+            $sql .= ' ORDER BY OBJECT_NAME';
+        }
+
+        $rows = DB::connection()->select($sql, $bindings);
+        $out = array();
+        foreach ($rows as $row) {
+            $row = (array) $row;
+            $name = isset($row['NAME']) ? $row['NAME'] : (isset($row['name']) ? $row['name'] : null);
+            $own = isset($row['OWNER']) ? $row['OWNER'] : (isset($row['owner']) ? $row['owner'] : null);
+            if ($name !== null) {
+                $out[] = array('name' => $name, 'owner' => $own);
             }
         }
         return $out;
@@ -186,6 +248,37 @@ class DefaultProcedureSourceReader implements ProcedureSourceReaderInterface
             $row = (array) $row;
             if (isset($row['name']) && $row['name'] !== null) {
                 $out[] = $row['name'];
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * @param array $options
+     * @return array<int, array{name: string, owner: ?string}>
+     */
+    protected function listMysqlDetailed(array $options)
+    {
+        $only = isset($options['only']) ? $options['only'] : null;
+
+        $sql = 'SELECT ROUTINE_NAME AS name, ROUTINE_SCHEMA AS owner FROM information_schema.ROUTINES '
+             . "WHERE ROUTINE_TYPE = 'PROCEDURE' AND ROUTINE_SCHEMA = DATABASE()";
+        $bindings = array();
+        if ($only) {
+            $sql .= ' AND ROUTINE_NAME = ?';
+            $bindings[] = $only;
+        }
+        $sql .= ' ORDER BY ROUTINE_NAME';
+
+        $rows = DB::connection()->select($sql, $bindings);
+        $out = array();
+        foreach ($rows as $row) {
+            $row = (array) $row;
+            if (isset($row['name']) && $row['name'] !== null) {
+                $out[] = array(
+                    'name' => $row['name'],
+                    'owner' => isset($row['owner']) ? $row['owner'] : null,
+                );
             }
         }
         return $out;

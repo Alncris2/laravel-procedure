@@ -15,6 +15,17 @@ interface ProcedureSourceReaderInterface
     public function listProcedures(array $options = array());
 
     /**
+     * Igual a listProcedures(), mas retorna para cada procedure um array com
+     * metadados úteis para agrupamento automático:
+     *   - name:  string  (nome da procedure)
+     *   - owner: ?string (schema/owner no Oracle; database no MySQL)
+     *
+     * @param array $options Mesmas chaves de listProcedures().
+     * @return array<int, array{name: string, owner: ?string}>
+     */
+    public function listProceduresDetailed(array $options = array());
+
+    /**
      * Retorna o SQL completo (executável) da procedure.
      *
      * Para o conteúdo ser reexecutável pelo executor, este método deve:

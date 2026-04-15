@@ -77,17 +77,34 @@ class ProcedureRollbackService
         if ($targetVersion === null) {
             $targetSnap = $this->previousSnapshot($def, $applied->version_number);
             if ($targetSnap === null) {
+                // Se existe uma versão anterior no banco mas sem arquivo físico (baseline
+                // de importação), dá uma mensagem específica — o rollback não é possível.
+                $hasBaselineHistory = $this->repository->getHistory($def->group, $def->name)
+                    ->contains(function ($row) use ($applied) {
+                        return $row->version_number < $applied->version_number;
+                    });
+                $reason = $hasBaselineHistory
+                    ? 'versão anterior é uma baseline de importação (sem snapshot físico); rollback não é possível'
+                    : 'não há versão anterior para rollback';
                 return array(
                     'procedure' => $def->name,
                     'group' => $def->group,
                     'action' => 'skipped',
-                    'reason' => 'não há versão anterior para rollback',
+                    'reason' => $reason,
                 );
             }
             $targetVersion = $targetSnap->versionNumber;
         } else {
             $targetSnap = $this->snapshotByVersion($def, (int) $targetVersion);
             if ($targetSnap === null) {
+                // Pode ser uma baseline de importação que existe só no banco.
+                $dbRow = $this->repository->findVersion($def->group, $def->name, (int) $targetVersion);
+                if ($dbRow !== null && $dbRow->version_label === ProcedureDumpService::LABEL_IMPORT) {
+                    throw new RuntimeException(
+                        'Versão ' . $targetVersion . ' é uma baseline de importação de '
+                        . $def->name . ' (sem snapshot físico em versions/); rollback não é possível'
+                    );
+                }
                 throw new RuntimeException(
                     'Versão ' . $targetVersion . ' não encontrada em disco para ' . $def->name
                 );
