@@ -117,6 +117,7 @@ class ProcedureScanner
             return $result;
         }
 
+        $sqlFiles = array();
         foreach ($files as $file) {
             if ($file === '.' || $file === '..') {
                 continue;
@@ -124,37 +125,62 @@ class ProcedureScanner
             if (substr($file, -4) !== '.sql') {
                 continue;
             }
-            if (!preg_match('/^(\d+)(?:_(.+))?\.sql$/', $file, $m)) {
-                continue;
-            }
+            $sqlFiles[] = $file;
+        }
 
-            $versionNumber = (int) $m[1];
-            $label = isset($m[2]) ? $m[2] : null;
+        sort($sqlFiles);
+
+        $position = 1;
+        foreach ($sqlFiles as $file) {
+            $label = $this->extractLabel($file);
             $fullPath = $versionsPath . DIRECTORY_SEPARATOR . $file;
             $contents = file_get_contents($fullPath);
             if ($contents === false) {
                 $contents = '';
             }
-            $checksum = Checksum::hash($contents);
 
             $result[] = new ProcedureSnapshot(
-                $versionNumber,
+                $position,
                 $label,
                 $file,
                 $fullPath,
                 $contents,
-                $checksum
+                Checksum::hash($contents)
             );
+            $position++;
         }
 
-        usort($result, function ($a, $b) {
-            if ($a->versionNumber === $b->versionNumber) {
-                return 0;
-            }
-            return ($a->versionNumber < $b->versionNumber) ? -1 : 1;
-        });
-
         return $result;
+    }
+
+    /**
+     * Extrai o label do nome do arquivo de snapshot.
+     *
+     * Suporta dois formatos:
+     *   Novo: YYYYMMdd_HHmmss_label.sql  → label
+     *   Legado: NNN_label.sql            → label
+     *
+     * @param string $fileName
+     * @return string|null
+     */
+    protected function extractLabel($fileName)
+    {
+        $base = substr($fileName, 0, -4);
+
+        // Novo formato: 20260601_143022_label ou 20260601_143022
+        if (preg_match('/^\d{8}_\d{6}_(.+)$/', $base, $m)) {
+            return $m[1];
+        }
+        if (preg_match('/^\d{8}_\d{6}$/', $base)) {
+            return null;
+        }
+
+        // Legado: 002_label ou 002
+        if (preg_match('/^\d+_(.+)$/', $base, $m)) {
+            return $m[1];
+        }
+
+        return null;
     }
 
     /**

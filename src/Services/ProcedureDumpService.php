@@ -291,8 +291,9 @@ class ProcedureDumpService
     }
 
     /**
-     * Cria snapshot físico em versions/NNN_dump_sync.sql usando numeração
-     * que considera todo o histórico no banco (inclui baselines sem arquivo).
+     * Cria snapshot físico em versions/YYYYMMdd_HHmmss_dump_sync.sql.
+     * O versionNumber do snapshot é a posição no disco (para rollback);
+     * o version_number gravado no banco é obtido separadamente via repositório.
      *
      * @param ProcedureDefinition $def
      * @return ProcedureSnapshot
@@ -308,14 +309,9 @@ class ProcedureDumpService
 
         $this->ensureDirs($def);
 
-        $padding = (int) config('procedure.version_padding', 3);
-        if ($padding < 1) {
-            $padding = 3;
-        }
-
-        $nextNumber = $this->repository->getNextVersionNumber($def->group, $def->name);
         $label = Slugger::slug(self::LABEL_SYNC, self::LABEL_SYNC);
-        $fileName = str_pad((string) $nextNumber, $padding, '0', STR_PAD_LEFT) . '_' . $label . '.sql';
+        $timestamp = date('Ymd_His');
+        $fileName = $timestamp . '_' . $label . '.sql';
         $fullPath = $def->versionsPath . DIRECTORY_SEPARATOR . $fileName;
 
         $contents = $def->readCurrent();
@@ -323,8 +319,9 @@ class ProcedureDumpService
             throw new RuntimeException('Falha ao gravar snapshot: ' . $fullPath);
         }
 
+        $position = count($def->snapshots) + 1;
         $snap = new ProcedureSnapshot(
-            $nextNumber,
+            $position,
             $label,
             $fileName,
             $fullPath,
@@ -399,10 +396,12 @@ class ProcedureDumpService
      */
     protected function registerSync(ProcedureDefinition $def, ProcedureSnapshot $snap)
     {
+        $dbVersionNumber = $this->repository->getNextVersionNumber($def->group, $def->name);
+
         $id = $this->repository->storeAppliedVersion(array(
             'group_name' => $def->group,
             'procedure_name' => $def->name,
-            'version_number' => $snap->versionNumber,
+            'version_number' => $dbVersionNumber,
             'version_label' => $snap->label,
             'file_name' => $snap->fileName,
             'file_path' => $snap->fullPath,

@@ -18,6 +18,11 @@ return array(
     | procedure:status, procedure:rollback e procedure:dump usam este caminho
     | como única fonte de verdade — não há pastas separadas por conexão.
     |
+    | Estrutura esperada:
+    |
+    |     {base_path}/{grupo}/{PROCEDURE_NAME}/current.sql
+    |     {base_path}/{grupo}/{PROCEDURE_NAME}/versions/YYYYMMdd_HHmmss_label.sql
+    |
     */
 
     'base_path' => database_path('procedures'),
@@ -79,20 +84,22 @@ return array(
 
     /*
     |--------------------------------------------------------------------------
-    | Version Padding
+    | Max Snapshots (Rolling Window)
     |--------------------------------------------------------------------------
     |
-    | Quantidade de dígitos usada no prefixo numérico dos arquivos de snapshot.
-    | O valor padrão (3) produz nomes como "001_initial.sql", "042_fix.sql".
+    | Número máximo de arquivos de snapshot mantidos em disk por procedure.
+    | Quando um novo snapshot é criado e o limite é ultrapassado, o arquivo
+    | mais antigo (pelo nome, que é ordenável por timestamp) é deletado
+    | automaticamente.
     |
-    | Aumente se você espera gerar mais de 999 versões de uma mesma procedure.
-    | Diminuir depois que o projeto já tem snapshots existentes é seguro — o
-    | parser aceita qualquer quantidade de dígitos; o padding só afeta os
-    | novos arquivos gerados a partir daqui.
+    | Com 164 procedures e limite 5 → máximo de 820 arquivos de snapshot
+    | no repositório, independente do tempo de vida do projeto.
+    |
+    | Use false ou 0 para desativar a limpeza automática.
     |
     */
 
-    'version_padding' => 3,
+    'max_snapshots' => 5,
 
     /*
     |--------------------------------------------------------------------------

@@ -11,20 +11,9 @@ use RuntimeException;
 class SnapshotService
 {
     /**
-     * @param ProcedureDefinition $procedure
-     * @return int
-     */
-    public function getNextVersionNumber(ProcedureDefinition $procedure)
-    {
-        $latest = $procedure->latestSnapshot();
-        if ($latest === null) {
-            return 1;
-        }
-        return $latest->versionNumber + 1;
-    }
-
-    /**
-     * Cria um snapshot copiando o current.sql para versions/NNN_label.sql.
+     * Cria um snapshot copiando o current.sql para versions/YYYYMMdd_HHmmss_label.sql.
+     * Após gravar, aplica o rolling window removendo os snapshots mais antigos
+     * caso o limite configurado em procedure.max_snapshots seja excedido.
      *
      * @param ProcedureDefinition $procedure
      * @param string|null         $message
@@ -45,15 +34,10 @@ class SnapshotService
             }
         }
 
-        $padding = (int) config('procedure.version_padding', 3);
-        if ($padding < 1) {
-            $padding = 3;
-        }
         $defaultMessage = config('procedure.default_snapshot_message', 'auto_snapshot');
-
-        $nextNumber = $this->getNextVersionNumber($procedure);
         $label = Slugger::slug($message, $defaultMessage);
-        $fileName = str_pad((string) $nextNumber, $padding, '0', STR_PAD_LEFT) . '_' . $label . '.sql';
+        $timestamp = date('Ymd_His');
+        $fileName = $timestamp . '_' . $label . '.sql';
         $fullPath = $procedure->versionsPath . DIRECTORY_SEPARATOR . $fileName;
 
         $contents = $procedure->readCurrent();
@@ -61,8 +45,9 @@ class SnapshotService
             throw new RuntimeException('Falha ao gravar snapshot: ' . $fullPath);
         }
 
+        $nextPosition = count($procedure->snapshots) + 1;
         $snap = new ProcedureSnapshot(
-            $nextNumber,
+            $nextPosition,
             $label,
             $fileName,
             $fullPath,
@@ -72,6 +57,50 @@ class SnapshotService
 
         $procedure->snapshots[] = $snap;
 
+        $this->pruneOldSnapshots($procedure);
+
         return $snap;
+    }
+
+    /**
+     * Remove os snapshots mais antigos do disco quando o número de arquivos
+     * em versions/ excede procedure.max_snapshots.
+     * Arquivos são ordenados pelo nome (YYYYMMdd_HHmmss prefix ordena corretamente).
+     *
+     * @param ProcedureDefinition $procedure
+     * @return void
+     */
+    public function pruneOldSnapshots(ProcedureDefinition $procedure)
+    {
+        $max = (int) config('procedure.max_snapshots', 5);
+        if ($max <= 0) {
+            return;
+        }
+
+        if (!is_dir($procedure->versionsPath)) {
+            return;
+        }
+
+        $files = scandir($procedure->versionsPath);
+        if ($files === false) {
+            return;
+        }
+
+        $sqlFiles = array();
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+            if (substr($file, -4) === '.sql') {
+                $sqlFiles[] = $file;
+            }
+        }
+
+        sort($sqlFiles);
+
+        $excess = count($sqlFiles) - $max;
+        for ($i = 0; $i < $excess; $i++) {
+            @unlink($procedure->versionsPath . DIRECTORY_SEPARATOR . $sqlFiles[$i]);
+        }
     }
 }

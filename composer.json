@@ -21,6 +21,14 @@
             "Alncris2\\LaravelProcedure\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Alncris2\\LaravelProcedure\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.5"
+    },
     "extra": {
         "laravel": {
             "providers": [

@@ -2,6 +2,7 @@
 
 namespace Alncris2\LaravelProcedure\Repositories;
 
+use Alncris2\LaravelProcedure\Support\PathHelper;
 use Illuminate\Support\Facades\DB;
 
 class ProcedureVersionRepository
@@ -97,7 +98,7 @@ class ProcedureVersionRepository
             'version_number' => $data['version_number'],
             'version_label' => isset($data['version_label']) ? $data['version_label'] : null,
             'file_name' => $data['file_name'],
-            'file_path' => $data['file_path'],
+            'file_path' => PathHelper::relativize($data['file_path'], config('procedure.base_path')),
             'checksum' => $data['checksum'],
             'execution_status' => $data['execution_status'],
             'execution_time_ms' => isset($data['execution_time_ms']) ? $data['execution_time_ms'] : null,

@@ -114,15 +114,12 @@ class ProcedureApplyService
         }
 
         $shouldSnapshot = (bool) config('procedure.snapshot_on_apply', true);
-        $snapshot = null;
         if ($shouldSnapshot) {
             $snapshot = $this->snapshots->createFromCurrent($def, $message);
         } else {
-            // sem snapshot, usa o próximo número só para registrar
-            $next = $this->snapshots->getNextVersionNumber($def);
             $contents = $def->readCurrent();
             $snapshot = new \Alncris2\LaravelProcedure\Models\ProcedureSnapshot(
-                $next,
+                0,
                 null,
                 'current.sql',
                 $def->currentPath,
@@ -133,10 +130,14 @@ class ProcedureApplyService
 
         $result = $this->executor->execute($snapshot->contents);
 
+        // version_number do banco é sempre max(DB)+1, independente da
+        // posição do snapshot no disco (que muda após rolling window).
+        $dbVersionNumber = $this->repository->getNextVersionNumber($def->group, $def->name);
+
         $id = $this->repository->storeAppliedVersion(array(
             'group_name' => $def->group,
             'procedure_name' => $def->name,
-            'version_number' => $snapshot->versionNumber,
+            'version_number' => $dbVersionNumber,
             'version_label' => $snapshot->label,
             'file_name' => $snapshot->fileName,
             'file_path' => $snapshot->fullPath,
@@ -154,7 +155,7 @@ class ProcedureApplyService
             'procedure' => $def->name,
             'group' => $def->group,
             'action' => 'applied',
-            'version' => $snapshot->versionNumber,
+            'version' => $dbVersionNumber,
             'file' => $snapshot->fileName,
             'status' => $result['status'],
             'execution_time_ms' => $result['execution_time_ms'],
