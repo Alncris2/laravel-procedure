@@ -264,6 +264,24 @@ class ProcedureDumpService
         $currentChecksum = Checksum::hash($currentNormalized);
 
         if ($currentChecksum === $newChecksum) {
+            // Normalizado bate com o banco, mas o arquivo em disco pode ter formatação
+            // diferente (espaços, quebras) que normaliza ao mesmo resultado. Garante que
+            // current.sql usa conteúdo normalizado e que a entrada is_current reflete o
+            // checksum correto — caso contrário o status exibirá CHANGED erroneamente.
+            if ($register) {
+                $rawChecksum    = Checksum::hash($def->readCurrent());
+                $applied        = $this->repository->getCurrentApplied($group, $name);
+                $storedChecksum = $applied ? $applied->checksum : null;
+
+                if ($rawChecksum !== $newChecksum || $storedChecksum !== $newChecksum) {
+                    if ($rawChecksum !== $newChecksum) {
+                        $this->writeCurrent($def, $normalized);
+                        $def = $this->scanner->buildDefinition($group, $name);
+                    }
+                    $this->registerBaseline($def, $newChecksum);
+                }
+            }
+
             return array(
                 'group' => $group,
                 'procedure' => $name,
