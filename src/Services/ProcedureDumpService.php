@@ -242,7 +242,7 @@ class ProcedureDumpService
         //    sem arquivo em versions/.
         if (!$def->hasCurrent()) {
             $this->ensureDirs($def);
-            $this->writeCurrent($def, $source);
+            $this->writeCurrent($def, $normalized);
             $def = $this->scanner->buildDefinition($group, $name);
 
             if ($register) {
@@ -273,7 +273,7 @@ class ProcedureDumpService
 
         // 3) Diverge — atualiza current.sql e cria snapshot NNN_dump_sync.sql
         //    (essa sim é uma mudança real vinda do banco que merece versionamento físico).
-        $this->writeCurrent($def, $source);
+        $this->writeCurrent($def, $normalized);
         $def = $this->scanner->buildDefinition($group, $name);
         $snap = $this->createSyncSnapshot($def);
 
