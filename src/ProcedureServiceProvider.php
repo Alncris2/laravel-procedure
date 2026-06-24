@@ -5,6 +5,7 @@ namespace Alncris2\LaravelProcedure;
 use Alncris2\LaravelProcedure\Console\Commands\ApplyProcedureCommand;
 use Alncris2\LaravelProcedure\Console\Commands\DumpProcedureCommand;
 use Alncris2\LaravelProcedure\Console\Commands\MakeProcedureCommand;
+use Alncris2\LaravelProcedure\Console\Commands\MoveProcedureCommand;
 use Alncris2\LaravelProcedure\Console\Commands\RollbackProcedureCommand;
 use Alncris2\LaravelProcedure\Console\Commands\StatusProcedureCommand;
 use Alncris2\LaravelProcedure\Console\Commands\VersionProcedureCommand;
@@ -16,6 +17,7 @@ use Alncris2\LaravelProcedure\Repositories\ProcedureVersionRepository;
 use Alncris2\LaravelProcedure\Services\AutoGroupResolver;
 use Alncris2\LaravelProcedure\Services\ProcedureApplyService;
 use Alncris2\LaravelProcedure\Services\ProcedureDumpService;
+use Alncris2\LaravelProcedure\Services\ProcedureMoveService;
 use Alncris2\LaravelProcedure\Services\ProcedureRollbackService;
 use Alncris2\LaravelProcedure\Services\ProcedureScanner;
 use Alncris2\LaravelProcedure\Services\ProcedureStatusService;
@@ -70,6 +72,13 @@ class ProcedureServiceProvider extends ServiceProvider
                 $app->make(ProcedureScanner::class),
                 $app->make(SnapshotService::class),
                 $app->make(ProcedureStatusService::class)
+            );
+        });
+
+        $this->app->singleton(ProcedureMoveService::class, function ($app) {
+            return new ProcedureMoveService(
+                $app->make(ProcedureScanner::class),
+                $app->make(ProcedureVersionRepository::class)
             );
         });
 
@@ -131,6 +140,7 @@ class ProcedureServiceProvider extends ServiceProvider
                 ApplyProcedureCommand::class,
                 RollbackProcedureCommand::class,
                 DumpProcedureCommand::class,
+                MoveProcedureCommand::class,
             ));
         }
     }
