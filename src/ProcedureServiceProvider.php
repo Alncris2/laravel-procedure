@@ -5,8 +5,10 @@ namespace Alncris2\LaravelProcedure;
 use Alncris2\LaravelProcedure\Console\Commands\ApplyProcedureCommand;
 use Alncris2\LaravelProcedure\Console\Commands\DumpProcedureCommand;
 use Alncris2\LaravelProcedure\Console\Commands\MakeProcedureCommand;
+use Alncris2\LaravelProcedure\Console\Commands\MoveProcedureCommand;
 use Alncris2\LaravelProcedure\Console\Commands\RollbackProcedureCommand;
 use Alncris2\LaravelProcedure\Console\Commands\StatusProcedureCommand;
+use Alncris2\LaravelProcedure\Console\Commands\VersionProcedureCommand;
 use Alncris2\LaravelProcedure\Contracts\ProcedureExecutorInterface;
 use Alncris2\LaravelProcedure\Contracts\ProcedureSourceReaderInterface;
 use Alncris2\LaravelProcedure\Executors\DefaultProcedureExecutor;
@@ -15,9 +17,11 @@ use Alncris2\LaravelProcedure\Repositories\ProcedureVersionRepository;
 use Alncris2\LaravelProcedure\Services\AutoGroupResolver;
 use Alncris2\LaravelProcedure\Services\ProcedureApplyService;
 use Alncris2\LaravelProcedure\Services\ProcedureDumpService;
+use Alncris2\LaravelProcedure\Services\ProcedureMoveService;
 use Alncris2\LaravelProcedure\Services\ProcedureRollbackService;
 use Alncris2\LaravelProcedure\Services\ProcedureScanner;
 use Alncris2\LaravelProcedure\Services\ProcedureStatusService;
+use Alncris2\LaravelProcedure\Services\ProcedureVersionService;
 use Alncris2\LaravelProcedure\Services\SnapshotService;
 use Illuminate\Support\ServiceProvider;
 
@@ -57,10 +61,24 @@ class ProcedureServiceProvider extends ServiceProvider
         $this->app->singleton(ProcedureApplyService::class, function ($app) {
             return new ProcedureApplyService(
                 $app->make(ProcedureScanner::class),
-                $app->make(SnapshotService::class),
                 $app->make(ProcedureExecutorInterface::class),
                 $app->make(ProcedureVersionRepository::class),
                 $app->make(ProcedureStatusService::class)
+            );
+        });
+
+        $this->app->singleton(ProcedureVersionService::class, function ($app) {
+            return new ProcedureVersionService(
+                $app->make(ProcedureScanner::class),
+                $app->make(SnapshotService::class),
+                $app->make(ProcedureStatusService::class)
+            );
+        });
+
+        $this->app->singleton(ProcedureMoveService::class, function ($app) {
+            return new ProcedureMoveService(
+                $app->make(ProcedureScanner::class),
+                $app->make(ProcedureVersionRepository::class)
             );
         });
 
@@ -118,9 +136,11 @@ class ProcedureServiceProvider extends ServiceProvider
             $this->commands(array(
                 MakeProcedureCommand::class,
                 StatusProcedureCommand::class,
+                VersionProcedureCommand::class,
                 ApplyProcedureCommand::class,
                 RollbackProcedureCommand::class,
                 DumpProcedureCommand::class,
+                MoveProcedureCommand::class,
             ));
         }
     }

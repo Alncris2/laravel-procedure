@@ -164,4 +164,37 @@ class ProcedureVersionRepository
             ->orderBy('version_number', 'desc')
             ->get();
     }
+
+    /**
+     * Atualiza group_name e corrige o prefixo de group no file_path de todas
+     * as versões de uma procedure ao mover de grupo.
+     *
+     * @param string $oldGroup
+     * @param string $procedureName
+     * @param string $newGroup
+     * @return void
+     */
+    public function moveGroup($oldGroup, $procedureName, $newGroup)
+    {
+        $now = date('Y-m-d H:i:s');
+        $rows = $this->query()
+            ->where('group_name', $oldGroup)
+            ->where('procedure_name', $procedureName)
+            ->get();
+
+        $oldPrefix = $oldGroup . '/' . $procedureName . '/';
+        $newPrefix = $newGroup . '/' . $procedureName . '/';
+
+        foreach ($rows as $row) {
+            $filePath = $row->file_path;
+            if (strpos($filePath, $oldPrefix) === 0) {
+                $filePath = $newPrefix . substr($filePath, strlen($oldPrefix));
+            }
+            $this->query()->where('id', $row->id)->update(array(
+                'group_name' => $newGroup,
+                'file_path' => $filePath,
+                'updated_at' => $now,
+            ));
+        }
+    }
 }

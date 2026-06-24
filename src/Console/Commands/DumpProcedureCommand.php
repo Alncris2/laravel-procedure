@@ -11,11 +11,11 @@ class DumpProcedureCommand extends Command
                             {--group= : Grupo de destino. Se omitido, executa auto-group em modo dry-run}
                             {--only= : Apenas uma procedure pelo nome}
                             {--owner= : Owner/schema (oracle)}
-                            {--no-register : Não registra a importação em procedure_versions}
+                            {--no-register : Não registra em procedure_versions — use para inspecionar alterações do banco sem gerar histórico}
                             {--apply : Efetiva a proposta de auto-group (requer --group ausente)}
                             {--strategy=cascade : Heurística de auto-group: cascade|prefix|tables|schema}';
 
-    protected $description = 'Importa todas as procedures do banco, criando/atualizando current.sql e gerando snapshot com label dump_import. Sem --group, infere grupos automaticamente (dry-run por padrão).';
+    protected $description = 'Puxa as procedures reais do banco para o código (current.sql). Compara o SQL real do banco com o arquivo em disco. Use --no-register para inspecionar sem registrar versão.';
 
     public function handle(ProcedureDumpService $dump)
     {

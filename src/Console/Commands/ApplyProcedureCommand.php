@@ -10,9 +10,9 @@ class ApplyProcedureCommand extends Command
     protected $signature = 'procedure:apply
                             {--only= : Aplica apenas uma procedure pelo nome}
                             {--group= : Aplica apenas procedures de um grupo}
-                            {--message= : Mensagem usada para nomear o snapshot gerado}';
+                            {--message= : Label descritivo gravado no histórico quando não há snapshot prévio}';
 
-    protected $description = 'Aplica as procedures pendentes/alteradas ao banco, gerando snapshots automaticamente.';
+    protected $description = 'Executa as procedures pendentes/alteradas no banco. Use procedure:version antes para criar os snapshots de versão.';
 
     public function handle(ProcedureApplyService $apply)
     {
