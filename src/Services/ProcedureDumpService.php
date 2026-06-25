@@ -374,6 +374,9 @@ class ProcedureDumpService
         if (file_put_contents($def->currentPath, $contents) === false) {
             throw new RuntimeException('Falha ao gravar: ' . $def->currentPath);
         }
+        // Armazena o nome original para que o scanner recupere corretamente
+        // quando o diretório usa nome sanitizado (chars especiais removidos).
+        @file_put_contents($def->basePath . DIRECTORY_SEPARATOR . '.procedure', $def->name);
     }
 
     /**
