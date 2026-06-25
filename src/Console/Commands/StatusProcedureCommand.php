@@ -9,7 +9,8 @@ class StatusProcedureCommand extends Command
 {
     protected $signature = 'procedure:status
                             {--group= : Filtra por grupo}
-                            {--changed : Mostra apenas procedures que não estão SYNCED}';
+                            {--changed : Mostra apenas procedures que não estão SYNCED}
+                            {--debug : Exibe checksums para diagnóstico de divergências}';
 
     protected $description = 'Lista o status de todas as procedures (SYNCED, CHANGED, PENDING, FAILED).';
 
@@ -35,20 +36,37 @@ class StatusProcedureCommand extends Command
             return 0;
         }
 
+        $debug = (bool) $this->option('debug');
+
         $display = array();
         foreach ($rows as $r) {
-            $display[] = array(
-                'group' => $r['group'],
-                'procedure' => $r['procedure'],
-                'status' => $r['status'],
+            $row = array(
+                'group'           => $r['group'],
+                'procedure'       => $r['procedure'],
+                'status'          => $r['status'],
                 'applied_version' => $r['applied_version'],
             );
+
+            if ($debug) {
+                $row['current_checksum'] = $r['current_checksum']
+                    ? substr($r['current_checksum'], 0, 12) . '…'
+                    : '(none)';
+                $row['applied_checksum'] = $r['applied_checksum']
+                    ? substr($r['applied_checksum'], 0, 12) . '…'
+                    : '(none)';
+                $row['match'] = ($r['current_checksum'] && $r['current_checksum'] === $r['applied_checksum'])
+                    ? 'YES'
+                    : 'NO';
+            }
+
+            $display[] = $row;
         }
 
-        $this->table(
-            array('group', 'procedure', 'status', 'applied_version'),
-            $display
-        );
+        $headers = $debug
+            ? array('group', 'procedure', 'status', 'applied_version', 'current_checksum', 'applied_checksum', 'match')
+            : array('group', 'procedure', 'status', 'applied_version');
+
+        $this->table($headers, $display);
         return 0;
     }
 }
