@@ -5,6 +5,7 @@ namespace Alncris2\LaravelProcedure\Services;
 use Alncris2\LaravelProcedure\Models\ProcedureDefinition;
 use Alncris2\LaravelProcedure\Models\ProcedureSnapshot;
 use Alncris2\LaravelProcedure\Support\Checksum;
+use Alncris2\LaravelProcedure\Support\Slugger;
 
 class ProcedureScanner
 {
@@ -43,8 +44,12 @@ class ProcedureScanner
         foreach ($groups as $group) {
             $groupPath = $this->basePath . DIRECTORY_SEPARATOR . $group;
             $procedures = $this->listDirs($groupPath);
-            foreach ($procedures as $procedureName) {
-                $def = $this->buildDefinition($group, $procedureName);
+            foreach ($procedures as $procedureDirName) {
+                $metaPath = $groupPath . DIRECTORY_SEPARATOR . $procedureDirName . DIRECTORY_SEPARATOR . '.procedure';
+                $realName = (is_file($metaPath) && ($n = trim((string) @file_get_contents($metaPath))) !== '')
+                    ? $n
+                    : $procedureDirName;
+                $def = $this->buildDefinition($group, $realName);
                 if ($def !== null) {
                     $result[] = $def;
                 }
@@ -87,16 +92,21 @@ class ProcedureScanner
 
     /**
      * @param string $group
-     * @param string $name
+     * @param string $name  Nome original da procedure no banco (pode conter chars especiais).
      * @return ProcedureDefinition
      */
     public function buildDefinition($group, $name)
     {
-        $basePath = $this->basePath . DIRECTORY_SEPARATOR . $group . DIRECTORY_SEPARATOR . $name;
-        $currentPath = $basePath . DIRECTORY_SEPARATOR . 'current.sql';
-        $versionsPath = $basePath . DIRECTORY_SEPARATOR . 'versions';
+        $safeName = Slugger::slug($name, $name);
+        $rawPath  = $this->basePath . DIRECTORY_SEPARATOR . $group . DIRECTORY_SEPARATOR . $name;
+        $safePath = $this->basePath . DIRECTORY_SEPARATOR . $group . DIRECTORY_SEPARATOR . $safeName;
 
-        $snapshots = $this->listSnapshots($versionsPath);
+        // Prefere o diretório já existente (backward compat); para novos usa nome seguro.
+        $basePath = is_dir($rawPath) ? $rawPath : $safePath;
+
+        $currentPath  = $basePath . DIRECTORY_SEPARATOR . 'current.sql';
+        $versionsPath = $basePath . DIRECTORY_SEPARATOR . 'versions';
+        $snapshots    = $this->listSnapshots($versionsPath);
 
         return new ProcedureDefinition($group, $name, $basePath, $currentPath, $versionsPath, $snapshots);
     }
